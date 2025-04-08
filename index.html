@@ -2,8 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DNA 편집기: 퍼즐 게임</title>
+  <title>DNA 편집기 퍼즐 게임 - 제한시간 확장</title>
   <style>
     body {
       font-family: 'Noto Sans KR', sans-serif;
@@ -25,9 +24,11 @@
       border-radius: 15px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
-    .level {
-      font-size: 18px;
-      color: #444;
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      margin-bottom: 20px;
     }
     .sequence {
       font-size: 20px;
@@ -62,9 +63,10 @@
       font-weight: bold;
     }
     .score {
-      float: right;
-      font-weight: bold;
       color: #3a6edb;
+    }
+    .timer {
+      color: red;
     }
     footer {
       text-align: center;
@@ -78,73 +80,84 @@
 
 <header>
   <h1>🧬 DNA 편집기 퍼즐 게임</h1>
-  <p>CRISPR 기술로 돌연변이를 고쳐보세요!</p>
+  <p>CRISPR 기술로 유전자를 정밀하게 편집하세요!</p>
 </header>
 
 <div class="container">
-  <div class="level">
-    <span id="levelInfo">레벨 1</span>
+  <div class="top-bar">
+    <span>레벨 <span id="level">1</span></span>
     <span class="score">점수: <span id="score">0</span></span>
+    <span class="timer">⏱ 남은 시간: <span id="time">30</span>초</span>
   </div>
 
-  <h3>🔬 문제:</h3>
+  <h3>🧩 문제:</h3>
   <p><strong>다음 염기서열에서 <span id="targetFrom">CGT</span>를 <span id="targetTo">GCA</span>로 모두 수정하세요.</strong></p>
   <div class="sequence" id="sequence">ATGCGTACCGTTA</div>
 
-  <input type="text" id="userInput" placeholder="편집된 염기서열을 입력하세요">
+  <input type="text" id="userInput" placeholder="편집한 염기서열을 입력하세요">
   <button class="btn" onclick="checkAnswer()">제출하기</button>
 
   <p class="feedback" id="feedback"></p>
 </div>
 
 <footer>
-  🧠 더 많은 AI 콘텐츠는 <a href="https://gptonline.ai/ko/" target="_blank">GPTOnline.ai</a>에서 체험해보세요!
+  🎮 더 많은 AI 게임과 학습 콘텐츠는 <a href="https://gptonline.ai/ko/" target="_blank">GPTOnline.ai</a>에서 만나보세요!
 </footer>
 
 <script>
   const levels = [
-    { sequence: "ATGCGTACCGTTA", from: "CGT", to: "GCA" },
-    { sequence: "GTCGTCAGCGT", from: "GTC", to: "ATG" },
-    { sequence: "CCAGGTCGACGT", from: "GAC", to: "TTA" },
-    { sequence: "AAGCGTAGTCGA", from: "AGT", to: "CTA" }
+    { sequence: "ATGCGTACCGTTA", from: "CGT", to: "GCA", time: 30 },
+    { sequence: "GTCGTCAGCGTGTCAGT", from: "GTC", to: "ATG", time: 40 },
+    { sequence: "CCAGGTCGACGTCAGTCCG", from: "GAC", to: "TTA", time: 50 },
+    { sequence: "AAGCGTAGTCGATTCGACGTAG", from: "AGT", to: "CTA", time: 60 }
   ];
   let currentLevel = 0;
   let score = 0;
-
-  const sequenceEl = document.getElementById("sequence");
-  const targetFromEl = document.getElementById("targetFrom");
-  const targetToEl = document.getElementById("targetTo");
-  const levelInfoEl = document.getElementById("levelInfo");
-  const feedbackEl = document.getElementById("feedback");
-  const scoreEl = document.getElementById("score");
+  let timer;
+  let timeLeft;
 
   function loadLevel() {
     const level = levels[currentLevel];
-    sequenceEl.textContent = level.sequence;
-    targetFromEl.textContent = level.from;
-    targetToEl.textContent = level.to;
-    levelInfoEl.textContent = `레벨 ${currentLevel + 1}`;
-    feedbackEl.textContent = "";
+    document.getElementById("level").textContent = currentLevel + 1;
+    document.getElementById("score").textContent = score;
+    document.getElementById("targetFrom").textContent = level.from;
+    document.getElementById("targetTo").textContent = level.to;
+    document.getElementById("sequence").textContent = level.sequence;
+    document.getElementById("feedback").textContent = "";
     document.getElementById("userInput").value = "";
+    document.getElementById("userInput").disabled = false;
+
+    timeLeft = level.time;
+    document.getElementById("time").textContent = timeLeft;
+    if (timer) clearInterval(timer);
+    timer = setInterval(() => {
+      timeLeft--;
+      document.getElementById("time").textContent = timeLeft;
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        failLevel("⏰ 시간이 초과되었습니다! 다시 도전하세요.");
+      }
+    }, 1000);
   }
 
   function checkAnswer() {
     const level = levels[currentLevel];
     const correct = level.sequence.replaceAll(level.from, level.to);
     const userInput = document.getElementById("userInput").value.trim().toUpperCase();
+    const feedbackEl = document.getElementById("feedback");
 
     if (userInput === correct) {
+      clearInterval(timer);
       score += 10;
-      feedbackEl.textContent = "✅ 정답입니다! 다음 레벨로 넘어갑니다.";
+      feedbackEl.textContent = "✅ 정답입니다! 다음 레벨로!";
       feedbackEl.style.color = "green";
-      scoreEl.textContent = score;
       currentLevel++;
       setTimeout(() => {
         if (currentLevel < levels.length) {
           loadLevel();
         } else {
-          feedbackEl.textContent = "🎉 모든 레벨을 완료했습니다! 훌륭해요!";
-          sequenceEl.textContent = "";
+          document.getElementById("sequence").textContent = "";
+          feedbackEl.textContent = "🎉 모든 레벨을 완료했습니다!";
           document.getElementById("userInput").style.display = "none";
         }
       }, 1500);
@@ -154,9 +167,15 @@
     }
   }
 
+  function failLevel(message) {
+    document.getElementById("feedback").textContent = message;
+    document.getElementById("feedback").style.color = "red";
+    document.getElementById("userInput").disabled = true;
+    setTimeout(loadLevel, 3000);
+  }
+
   loadLevel();
 </script>
 
 </body>
 </html>
-``
