@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DNA 편집기: 퍼즐 게임</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: linear-gradient(to right, #e0f7ff, #ffffff);
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #3a6edb;
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    .level {
+      font-size: 18px;
+      color: #444;
+    }
+    .sequence {
+      font-size: 20px;
+      font-family: monospace;
+      background-color: #f3faff;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #aaa;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+    .btn {
+      padding: 12px 20px;
+      background-color: #3a6edb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #244d9d;
+    }
+    .feedback {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .score {
+      float: right;
+      font-weight: bold;
+      color: #3a6edb;
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      margin-top: 40px;
+      background-color: #f0f7ff;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🧬 DNA 편집기 퍼즐 게임</h1>
+  <p>CRISPR 기술로 돌연변이를 고쳐보세요!</p>
+</header>
+
+<div class="container">
+  <div class="level">
+    <span id="levelInfo">레벨 1</span>
+    <span class="score">점수: <span id="score">0</span></span>
+  </div>
+
+  <h3>🔬 문제:</h3>
+  <p><strong>다음 염기서열에서 <span id="targetFrom">CGT</span>를 <span id="targetTo">GCA</span>로 모두 수정하세요.</strong></p>
+  <div class="sequence" id="sequence">ATGCGTACCGTTA</div>
+
+  <input type="text" id="userInput" placeholder="편집된 염기서열을 입력하세요">
+  <button class="btn" onclick="checkAnswer()">제출하기</button>
+
+  <p class="feedback" id="feedback"></p>
+</div>
+
+<footer>
+  🧠 더 많은 AI 콘텐츠는 <a href="https://gptonline.ai/ko/" target="_blank">GPTOnline.ai</a>에서 체험해보세요!
+</footer>
+
+<script>
+  const levels = [
+    { sequence: "ATGCGTACCGTTA", from: "CGT", to: "GCA" },
+    { sequence: "GTCGTCAGCGT", from: "GTC", to: "ATG" },
+    { sequence: "CCAGGTCGACGT", from: "GAC", to: "TTA" },
+    { sequence: "AAGCGTAGTCGA", from: "AGT", to: "CTA" }
+  ];
+  let currentLevel = 0;
+  let score = 0;
+
+  const sequenceEl = document.getElementById("sequence");
+  const targetFromEl = document.getElementById("targetFrom");
+  const targetToEl = document.getElementById("targetTo");
+  const levelInfoEl = document.getElementById("levelInfo");
+  const feedbackEl = document.getElementById("feedback");
+  const scoreEl = document.getElementById("score");
+
+  function loadLevel() {
+    const level = levels[currentLevel];
+    sequenceEl.textContent = level.sequence;
+    targetFromEl.textContent = level.from;
+    targetToEl.textContent = level.to;
+    levelInfoEl.textContent = `레벨 ${currentLevel + 1}`;
+    feedbackEl.textContent = "";
+    document.getElementById("userInput").value = "";
+  }
+
+  function checkAnswer() {
+    const level = levels[currentLevel];
+    const correct = level.sequence.replaceAll(level.from, level.to);
+    const userInput = document.getElementById("userInput").value.trim().toUpperCase();
+
+    if (userInput === correct) {
+      score += 10;
+      feedbackEl.textContent = "✅ 정답입니다! 다음 레벨로 넘어갑니다.";
+      feedbackEl.style.color = "green";
+      scoreEl.textContent = score;
+      currentLevel++;
+      setTimeout(() => {
+        if (currentLevel < levels.length) {
+          loadLevel();
+        } else {
+          feedbackEl.textContent = "🎉 모든 레벨을 완료했습니다! 훌륭해요!";
+          sequenceEl.textContent = "";
+          document.getElementById("userInput").style.display = "none";
+        }
+      }, 1500);
+    } else {
+      feedbackEl.textContent = "❌ 틀렸습니다. 다시 시도해보세요!";
+      feedbackEl.style.color = "red";
+    }
+  }
+
+  loadLevel();
+</script>
+
+</body>
+</html>
+``
